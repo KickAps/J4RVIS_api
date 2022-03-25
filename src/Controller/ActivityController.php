@@ -76,7 +76,15 @@ class ActivityController extends AbstractController
             'title' => $title,
             'stoppedAt' => null
         ]);
-        $activity->setStoppedAt(new \DateTimeImmutable());
+
+        $start = $activity->getStartedAt();
+        $stop = new \DateTimeImmutable();
+
+        if($stop->getTimestamp() - $start->getTimestamp() < 30*60) {
+            $stop = $start->add(new \DateInterval('PT30M'));
+        }
+
+        $activity->setStoppedAt($stop);
 
         $em->persist($activity);
         $em->flush();
