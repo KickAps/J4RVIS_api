@@ -17,15 +17,30 @@ use App\Entity\Activity;
 
 class ActivityController extends AbstractController
 {
+    #[Route('/activity', name: 'activity_list')]
+    public function listAction(EntityManagerInterface $em, ActivityRepository $activityRepository): Response
+    {
+        $activity_list = $activityRepository->findAll();
+        $activity_json = [];
+        foreach ($activity_list as $activity) {
+            $start = $activity->getStartedAt()->format('Y-m-d H:i:s');
+            $stop = $activity->getStoppedAt() ? $activity->getStoppedAt()->format('Y-m-d H:i:s') : $start;
+            $activity_json[] = [
+                'id' => $activity->getId(),
+                'title' => $activity->getTitle(),
+                'start' => $start,
+                'end' => $stop,
+            ];
+        }
+
+        return $this->render('activity/index.html.twig', [
+            'data' => json_encode($activity_json),
+        ]);
+    }
+
     #[Route("/activity/{id}", name: 'activity_show', methods: ['GET'])]
     public function showAction(Activity $activity, SerializerInterface $serializer)
     {
-        // $activity = new Activity();
-        // $activity
-        //     ->setTitle('Mon premier article')
-        //     ->setStartedAt(new \DateTimeImmutable())
-        //     ->setStoppedAt(new \DateTimeImmutable())
-        // ;
         $data = $serializer->serialize($activity, 'json');
 
         $response = new Response($data);
@@ -39,6 +54,7 @@ class ActivityController extends AbstractController
     {
         $data = $request->getContent();
         $activity = $serializer->deserialize($data, Activity::class, 'json');
+
         $activity->setStartedAt(new \DateTimeImmutable());
 
         $em->persist($activity);
@@ -47,9 +63,19 @@ class ActivityController extends AbstractController
         return new Response('', Response::HTTP_CREATED);
     }
 
-    #[Route("/activity/{id}/stop", name: 'activity_stop', methods: ['PUT'])]
-    public function stopActivity(Activity $activity, Request $request, SerializerInterface $serializer, EntityManagerInterface $em)
+    #[Route("/activity/stop", name: 'activity_stop', methods: ['PUT'])]
+    public function stopActivity(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, ActivityRepository $activityRepository)
     {
+        // GET  $request->query->get('title')
+        // POST $request->request->get('title')
+        // PUT  $request->get('title')
+
+        $title = $request->get('title');
+
+        $activity = $activityRepository->findOneBy([
+            'title' => $title,
+            'stoppedAt' => null
+        ]);
         $activity->setStoppedAt(new \DateTimeImmutable());
 
         $em->persist($activity);
@@ -58,6 +84,7 @@ class ActivityController extends AbstractController
         return new Response('', Response::HTTP_ACCEPTED);
     }
 
+    // TODO : Affichage des activités côté MOBILE
     // #[Route("/articles", name: 'article_list', methods: ['GET'])]
     // public function listAction(SerializerInterface $serializer, ArticleRepository $articleRepository)
     // {
