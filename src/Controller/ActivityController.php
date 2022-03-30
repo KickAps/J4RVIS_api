@@ -8,21 +8,23 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use App\Controller\HomeController;
 
 use Doctrine\ORM\EntityManagerInterface;
 
 use App\Repository\ActivityRepository;
 use App\Entity\Activity;
 
-class ActivityController extends AbstractController
-{
+class ActivityController extends AbstractController {
     #[Route('/activity', name: 'activity_list')]
-    public function listAction(EntityManagerInterface $em, ActivityRepository $activityRepository): Response
-    {
+    public function listAction(Request $request, EntityManagerInterface $em, ActivityRepository $activityRepository, HomeController $homeController): Response {
+        if($response = $homeController->check_cookie_password($request)) {
+            return $response;
+        }
+
         $activity_list = $activityRepository->findAll();
         $activity_json = [];
-        foreach ($activity_list as $activity) {
+        foreach($activity_list as $activity) {
             $start = $activity->getStartedAt()->format('Y-m-d H:i:s');
             $stop = $activity->getStoppedAt() ? $activity->getStoppedAt()->format('Y-m-d H:i:s') : $start;
             $activity_json[] = [
@@ -39,8 +41,7 @@ class ActivityController extends AbstractController
     }
 
     #[Route("/activity/{id}", name: 'activity_show', methods: ['GET'])]
-    public function showAction(Activity $activity, SerializerInterface $serializer)
-    {
+    public function showAction(Activity $activity, SerializerInterface $serializer): Response {
         $data = $serializer->serialize($activity, 'json');
 
         $response = new Response($data);
@@ -50,8 +51,7 @@ class ActivityController extends AbstractController
     }
 
     #[Route("/activity/start", name: 'activity_start', methods: ['POST'])]
-    public function startActivity(Request $request, SerializerInterface $serializer, EntityManagerInterface $em)
-    {
+    public function startActivity(Request $request, SerializerInterface $serializer, EntityManagerInterface $em): Response {
         $data = $request->getContent();
         $activity = $serializer->deserialize($data, Activity::class, 'json');
 
@@ -64,8 +64,7 @@ class ActivityController extends AbstractController
     }
 
     #[Route("/activity/stop", name: 'activity_stop', methods: ['PUT'])]
-    public function stopActivity(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, ActivityRepository $activityRepository)
-    {
+    public function stopActivity(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, ActivityRepository $activityRepository): Response {
         // GET  $request->query->get('title')
         // POST $request->request->get('title')
         // PUT  $request->get('title')
@@ -80,7 +79,7 @@ class ActivityController extends AbstractController
         $start = $activity->getStartedAt();
         $stop = new \DateTimeImmutable();
 
-        if($stop->getTimestamp() - $start->getTimestamp() < 30*60) {
+        if($stop->getTimestamp() - $start->getTimestamp() < 30 * 60) {
             $stop = $start->add(new \DateInterval('PT30M'));
         }
 
