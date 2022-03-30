@@ -1,0 +1,47 @@
+@import "~bootstrap/scss/bootstrap";
+
+// GENERAL
+html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    margin-top: 84px;
+    height: calc(100% - 84px);
+    background-color: ghostwhite;
+}
+
+// NAVBAR
+nav.navbar {
+    font-weight: bold;
+}
+
+ul.navbar-nav li a {
+    font-size: 1.5rem;
+}
+
+a.navbar-brand {
+    font-size: 2rem;
+}
+
+li.active {
+    background-color: ghostwhite;
+
+    a.nav-link {
+        color: #212529 !important;
+    }
+}
+
+// ACTIVITY
+#activity_calendar {
+    max-width: 1000px;
+    width: 80%;
+    margin: auto;
+
+    a {
+        text-decoration: none;
+        color: #212529;
+    }
+}

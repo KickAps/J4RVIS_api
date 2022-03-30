@@ -1,0 +1,15 @@
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="{{ path('home') }}">{{ "J4RVIS" }}</a>
+        <div class="collapse navbar-collapse" id="navbarsExample04">
+            <ul class="navbar-nav ms-auto py-2 px-0 px-lg-3">
+                <li class="{{ set_active_route('activity_list') }}">
+                    <a class="nav-link" href="{{ path('activity_list') }}">{{ "Activités" }}</a>
+                </li>
+                <li class="{{ set_active_route('') }}">
+                    <a class="nav-link" href="">{{ "Objectifs" }}</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

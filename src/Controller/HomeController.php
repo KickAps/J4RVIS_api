@@ -26,7 +26,9 @@ class HomeController extends AbstractController {
             $response->headers->setCookie(Cookie::create("password", "valid"));
             return $response;
         }
-        return $this->render("home/index.html.twig");
+        return $this->render("home/index.html.twig", [
+            'hide_navbar' => true
+        ]);
     }
 
     public function check_cookie_password(Request $request) {
