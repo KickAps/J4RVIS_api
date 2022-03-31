@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ActivityRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ActivityRepository::class)]
@@ -12,14 +14,15 @@ class Activity {
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\Column(type: 'string', length: 255)]
+    #[ORM\Column(type: 'string', length: 255, unique: true)]
     private $title;
 
-    #[ORM\Column(type: 'datetime_immutable')]
-    private $startedAt;
+    #[ORM\OneToMany(mappedBy: 'activity', targetEntity: Calendar::class)]
+    private $calendars;
 
-    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
-    private $stoppedAt;
+    public function __construct() {
+        $this->calendars = new ArrayCollection();
+    }
 
     public function getId(): ?int {
         return $this->id;
@@ -35,22 +38,29 @@ class Activity {
         return $this;
     }
 
-    public function getStartedAt(): ?\DateTimeImmutable {
-        return $this->startedAt;
+    /**
+     * @return Collection<int, Calendar>
+     */
+    public function getCalendars(): Collection {
+        return $this->calendars;
     }
 
-    public function setStartedAt(\DateTimeImmutable $startedAt): self {
-        $this->startedAt = $startedAt;
+    public function addCalendar(Calendar $calendar): self {
+        if(!$this->calendars->contains($calendar)) {
+            $this->calendars[] = $calendar;
+            $calendar->setActivity($this);
+        }
 
         return $this;
     }
 
-    public function getStoppedAt(): ?\DateTimeImmutable {
-        return $this->stoppedAt;
-    }
-
-    public function setStoppedAt(\DateTimeImmutable $stoppedAt): self {
-        $this->stoppedAt = $stoppedAt;
+    public function removeCalendar(Calendar $calendar): self {
+        if($this->calendars->removeElement($calendar)) {
+            // set the owning side to null (unless already changed)
+            if($calendar->getActivity() === $this) {
+                $calendar->setActivity(null);
+            }
+        }
 
         return $this;
     }

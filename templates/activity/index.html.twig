@@ -1,20 +1,9 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Liste de mes activités{% endblock %}
+{% block title %}Activités{% endblock %}
 
 {% block body %}
-    <h2>Liste de mes activités</h2>
-    {# {% for activity in activity_list %}
-        <div id="{{ activity.id }}">
-            <h3>{{ activity.title }}</h3>
-            {% if activity.stoppedAt %}
-                <span>{{ activity.startedAt|date('H:i:s d-m-Y') }} - {{ activity.stoppedAt|date('H:i:s d-m-Y') }}</span>
-            {% else %}
-                <span>{{ activity.startedAt|date('H:i:s d-m-Y') }}</span>
-            {% endif %}
-        </div>
-    {% endfor %} #}
-    <div id="activity_calendar"></div>
+    <div id="activity_calendar" class="mt-3"></div>
 {% endblock %}
 
 {% block javascripts %}

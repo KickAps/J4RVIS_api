@@ -8,18 +8,19 @@ html {
 }
 
 body {
-    margin-top: 84px;
-    height: calc(100% - 84px);
+    padding-top: 80px;
+    height: 100%;
     background-color: ghostwhite;
 }
 
 // NAVBAR
 nav.navbar {
     font-weight: bold;
+    height: 80px;
 }
 
 ul.navbar-nav li a {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
 }
 
 a.navbar-brand {
