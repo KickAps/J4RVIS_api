@@ -3,18 +3,39 @@
 {% block title %}Hello TargetController!{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
-
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href="{{ 'C:/Users/Florian/Documents/DEV/Symfony/J4RVIS/src/Controller/TargetController.php'|file_link(0) }}">src/Controller/TargetController.php</a></code></li>
-        <li>Your template at <code><a href="{{ 'C:/Users/Florian/Documents/DEV/Symfony/J4RVIS/templates/target/index.html.twig'|file_link(0) }}">templates/target/index.html.twig</a></code></li>
-    </ul>
-</div>
+    <div class="w-75 mt-3 m-auto">
+        {#        <nav> #}
+        {#            <div class="nav nav-tabs" id="nav-tab" role="tablist"> #}
+        {#                <button class="nav-link active" id="nav-day-tab" data-bs-toggle="tab" data-bs-target="#nav-day" type="button" role="tab" aria-controls="nav-day" aria-selected="true">Jour</button> #}
+        {#                <button class="nav-link" id="nav-week-tab" data-bs-toggle="tab" data-bs-target="#nav-week" type="button" role="tab" aria-controls="nav-week" aria-selected="false">Semaine</button> #}
+        {#                <button class="nav-link" id="nav-month-tab" data-bs-toggle="tab" data-bs-target="#nav-month" type="button" role="tab" aria-controls="nav-month" aria-selected="false">Mois</button> #}
+        {#                <button class="nav-link" id="nav-year-tab" data-bs-toggle="tab" data-bs-target="#nav-year" type="button" role="tab" aria-controls="nav-year" aria-selected="false">Année</button> #}
+        {#            </div> #}
+        {#        </nav> #}
+        {#        <div class="tab-content" id="nav-tabContent"> #}
+        {#            <div class="tab-pane fade show active" id="nav-day" role="tabpanel" aria-labelledby="nav-day-tab"> #}
+        {#                day #}
+        {#            </div> #}
+        {#            <div class="tab-pane fade" id="nav-week" role="tabpanel" aria-labelledby="nav-week-tab"> #}
+        {#                week #}
+        {#            </div> #}
+        {#            <div class="tab-pane fade" id="nav-month" role="tabpanel" aria-labelledby="nav-month-tab"> #}
+        {#                month #}
+        {#            </div> #}
+        {#            <div class="tab-pane fade" id="nav-year" role="tabpanel" aria-labelledby="nav-year-tab"> #}
+        {#                year #}
+        {#            </div> #}
+        {#        </div> #}
+        {% for target in targets %}
+            <div id="{{ target.id }}">
+                <h3>{{ target.activity.title }}</h3>
+                <span>{{ target.hours }}</span>
+                {#                {% if activity.stoppedAt %} #}
+                {#                    <span>{{ activity.startedAt|date('H:i:s d-m-Y') }} - {{ activity.stoppedAt|date('H:i:s d-m-Y') }}</span> #}
+                {#                {% else %} #}
+                {#                    <span>{{ activity.startedAt|date('H:i:s d-m-Y') }}</span> #}
+                {#                {% endif %} #}
+            </div>
+        {% endfor %}
+    </div>
 {% endblock %}

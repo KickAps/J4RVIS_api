@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello GarminConnectController!{% endblock %}
+
+{% block body %}
+    <div>
+        <form action="{{ path('app_garmin_connect_cookies') }}" method="POST">
+            <button type="submit">Valider</button>
+            <label>
+                Cookies
+                <textarea name="cookies"></textarea>
+            </label>
+        </form>
+    </div>
+{% endblock %}

@@ -7,11 +7,12 @@
 {% endblock %}
 
 {% block javascripts %}
+    {{ parent() }}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const calendarEl = document.getElementById('activity_calendar');
             const calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'listWeek',
+                initialView: 'timeGridWeek',
                 locale: 'fr',
                 headerToolbar: {
                     left: 'prev,next today',
@@ -22,6 +23,5 @@
             });
             calendar.render();
         });
-
     </script>
 {% endblock %}
