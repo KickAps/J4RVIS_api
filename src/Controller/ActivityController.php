@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 class ActivityController extends AbstractController {
     #[Route('/activity', name: 'activity_list')]
     public function listAction(Request $request, CalendarRepository $calendarRepository, HomeController $homeController): Response {
-        if($response = $homeController->check_cookie_password($request)) {
+        if($response = $homeController->check_cookie_password($request, "activity_list")) {
             return $response;
         }
 

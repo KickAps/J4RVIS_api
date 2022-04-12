@@ -11,7 +11,11 @@ class GarminConnectController extends AbstractController {
     const COOKIES_FILE_PATH = "garmin-connect/cookies.json";
 
     #[Route('/garmin/connect/cookies', name: 'app_garmin_connect_cookies', methods: ['GET', 'POST'])]
-    public function index(Request $request): Response {
+    public function index(Request $request, HomeController $homeController): Response {
+        if($response = $homeController->check_cookie_password($request, "app_garmin_connect_cookies")) {
+            return $response;
+        }
+
         $cookies = $request->request->get('cookies');
         if($cookies) {
             file_put_contents(self::COOKIES_FILE_PATH, $cookies);

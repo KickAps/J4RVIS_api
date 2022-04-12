@@ -18,7 +18,10 @@ class TargetController extends AbstractController {
     public const YEARLY = "Y";
 
     #[Route('/target', name: 'target')]
-    public function index(TargetRepository $targetRepository): Response {
+    public function index(TargetRepository $targetRepository, Request $request, HomeController $homeController): Response {
+        if($response = $homeController->check_cookie_password($request, "target")) {
+            return $response;
+        }
         $targets = $targetRepository->findAll();
 
         return $this->render('target/index.html.twig', [
