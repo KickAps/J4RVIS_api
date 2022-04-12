@@ -10,7 +10,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class TargetController extends AbstractController {
     public const DAILY = "D";
@@ -28,7 +27,7 @@ class TargetController extends AbstractController {
     }
 
     #[Route('/target/test', name: 'test')]
-    public function getHoursByPeriod(Request $request, ActivityRepository $activityRepository, CalendarRepository $calendarRepository, HttpClientInterface $client): Response {
+    public function getHoursByPeriod(Request $request, ActivityRepository $activityRepository, CalendarRepository $calendarRepository): Response {
         $day = $request->query->get('day');
         $period = $request->query->get('period');
 
@@ -123,7 +122,7 @@ class TargetController extends AbstractController {
     }
 
     #[Route('/target/signin', name: 'signin')]
-    public function signin(Request $request, ActivityRepository $activityRepository, CalendarRepository $calendarRepository, HttpClientInterface $client): Response {
+    public function signin(Request $request, ActivityRepository $activityRepository, CalendarRepository $calendarRepository): Response {
         // NE FONCTIONNE PAS
         $curl = curl_init();
         curl_setopt_array($curl, array(
