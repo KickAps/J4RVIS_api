@@ -2,45 +2,53 @@
 
 namespace App\Controller;
 
+use App\Entity\Activity;
+use App\Entity\Calendar;
+use App\Repository\ActivityRepository;
+use App\Repository\CalendarRepository;
+use DateInterval;
+use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
-
-use Doctrine\ORM\EntityManagerInterface;
-
-use App\Repository\ActivityRepository;
-use App\Entity\Activity;
-
-class ActivityController extends AbstractController
-{
+class ActivityController extends AbstractController {
     #[Route('/activity', name: 'activity_list')]
-    public function listAction(EntityManagerInterface $em, ActivityRepository $activityRepository): Response
-    {
-        $activity_list = $activityRepository->findAll();
-        $activity_json = [];
-        foreach ($activity_list as $activity) {
-            $start = $activity->getStartedAt()->format('Y-m-d H:i:s');
-            $stop = $activity->getStoppedAt() ? $activity->getStoppedAt()->format('Y-m-d H:i:s') : $start;
-            $activity_json[] = [
-                'id' => $activity->getId(),
-                'title' => $activity->getTitle(),
+    public function listAction(Request $request, CalendarRepository $calendarRepository, HomeController $homeController): Response {
+        if($response = $homeController->check_cookie_password($request)) {
+            return $response;
+        }
+
+        $calendar_list = $calendarRepository->findAll();
+        $calendar_json = [];
+        foreach($calendar_list as $calendar) {
+            $title = $calendar->getActivity()->getTitle();
+            $start = $calendar->getStartedAt()->format('Y-m-d H:i:s');
+            if($calendar->getStoppedAt()) {
+                $stop = $calendar->getStoppedAt()->format('Y-m-d H:i:s');
+            } else {
+                $stop = (new DateTimeImmutable())->format('Y-m-d H:i:s');
+                $title .= " (En cours)";
+            }
+            $calendar_json[] = [
+                'id' => $calendar->getId(),
+                'title' => $title,
                 'start' => $start,
                 'end' => $stop,
             ];
         }
 
         return $this->render('activity/index.html.twig', [
-            'data' => json_encode($activity_json),
+            'data' => json_encode($calendar_json),
         ]);
     }
 
     #[Route("/activity/{id}", name: 'activity_show', methods: ['GET'])]
-    public function showAction(Activity $activity, SerializerInterface $serializer)
-    {
+    public function showAction(Activity $activity, SerializerInterface $serializer): Response {
+        // TODO : pas utilisée
         $data = $serializer->serialize($activity, 'json');
 
         $response = new Response($data);
@@ -50,43 +58,52 @@ class ActivityController extends AbstractController
     }
 
     #[Route("/activity/start", name: 'activity_start', methods: ['POST'])]
-    public function startActivity(Request $request, SerializerInterface $serializer, EntityManagerInterface $em)
-    {
+    public function startActivity(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, ActivityRepository $activityRepository): Response {
         $data = $request->getContent();
         $activity = $serializer->deserialize($data, Activity::class, 'json');
 
-        $activity->setStartedAt(new \DateTimeImmutable());
+        if($a = $activityRepository->findOneBy(['title' => $activity->getTitle()])) {
+            $activity = $a;
+        } else {
+            $em->persist($activity);
+        }
 
-        $em->persist($activity);
+        $calendar = new Calendar();
+        $calendar->setActivity($activity);
+        $calendar->setStartedAt(new DateTimeImmutable());
+
+        $em->persist($calendar);
+
         $em->flush();
 
         return new Response('', Response::HTTP_CREATED);
     }
 
     #[Route("/activity/stop", name: 'activity_stop', methods: ['PUT'])]
-    public function stopActivity(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, ActivityRepository $activityRepository)
-    {
+    public function stopActivity(Request $request, EntityManagerInterface $em, ActivityRepository $activityRepository, CalendarRepository $calendarRepository): Response {
         // GET  $request->query->get('title')
         // POST $request->request->get('title')
         // PUT  $request->get('title')
 
         $title = $request->get('title');
-
         $activity = $activityRepository->findOneBy([
-            'title' => $title,
+            'title' => $title
+        ]);
+        $calendar = $calendarRepository->findOneBy([
+            'activity' => $activity,
             'stoppedAt' => null
         ]);
 
-        $start = $activity->getStartedAt();
-        $stop = new \DateTimeImmutable();
+        $start = $calendar->getStartedAt();
+        $stop = new DateTimeImmutable();
 
-        if($stop->getTimestamp() - $start->getTimestamp() < 30*60) {
-            $stop = $start->add(new \DateInterval('PT30M'));
+        if($stop->getTimestamp() - $start->getTimestamp() < 30 * 60) {
+            $stop = $start->add(new DateInterval('PT30M'));
         }
 
-        $activity->setStoppedAt($stop);
+        $calendar->setStoppedAt($stop);
 
-        $em->persist($activity);
+        $em->persist($calendar);
         $em->flush();
 
         return new Response('', Response::HTTP_ACCEPTED);

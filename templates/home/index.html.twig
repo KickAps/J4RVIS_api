@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello HomeController!{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-center">
+        <div class="mt-5">
+            <form action="{{ path('home') }}" method="post">
+                <div class="input-group mb-3">
+                    <input type="password" class="form-control border-dark" name="password" aria-describedby="button-addon2">
+                    <input id="button-addon2" class="btn btn-warning border-dark" type="submit" value="Entrer">
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

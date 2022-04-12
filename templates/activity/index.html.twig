@@ -1,37 +1,17 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Liste de mes activités{% endblock %}
-
-{% block stylesheets %}
-    <style>
-        #activity_calendar {
-            max-width: 1000px;
-            width: 80%;
-            margin: auto;
-        }
-    </style>
-{% endblock %}
+{% block title %}Activités{% endblock %}
 
 {% block body %}
-    <h2>Liste de mes activités</h2>
-    {# {% for activity in activity_list %}
-        <div id="{{ activity.id }}">
-            <h3>{{ activity.title }}</h3>
-            {% if activity.stoppedAt %}
-                <span>{{ activity.startedAt|date('H:i:s d-m-Y') }} - {{ activity.stoppedAt|date('H:i:s d-m-Y') }}</span>
-            {% else %}
-                <span>{{ activity.startedAt|date('H:i:s d-m-Y') }}</span>
-            {% endif %}
-        </div>
-    {% endfor %} #}
-    <div id="activity_calendar"></div>
+    <div id="activity_calendar" class="mt-3"></div>
 {% endblock %}
 
 {% block javascripts %}
+    {{ parent() }}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            var calendarEl = document.getElementById('activity_calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {
+            const calendarEl = document.getElementById('activity_calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'timeGridWeek',
                 locale: 'fr',
                 headerToolbar: {
@@ -42,7 +22,6 @@
                 events: {{ data|raw }}
             });
             calendar.render();
-          });
-
+        });
     </script>
 {% endblock %}
