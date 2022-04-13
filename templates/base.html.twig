@@ -17,6 +17,11 @@
     {% endblock %}
 </head>
 <body>
+<div id="loader" hidden>
+    <div class="loader-background fixed-top"></div>
+    <div class="loader-circle"></div>
+</div>
+
 {% if hide_navbar is not defined %}
     {{ include('_navbar.html.twig') }}
 {% endif %}

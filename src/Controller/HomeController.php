@@ -22,18 +22,21 @@ class HomeController extends AbstractController {
 
         if(password_verify($password, self::PASSWORD_HASH)) {
             // Redirection
-            $response = $this->redirectToRoute("activity_list");
+            $route = $request->request->get('route') ?? "activity_list";
+            $response = $this->redirectToRoute($route);
             $response->headers->setCookie(Cookie::create("password", "valid"));
             return $response;
         }
+
         return $this->render("home/index.html.twig", [
-            'hide_navbar' => true
+            'hide_navbar' => true,
+            'route' => $request->query->get('route') ?? "activity_list"
         ]);
     }
 
     public function check_cookie_password(Request $request) {
         if(!password_verify($request->cookies->get("password"), self::COOKIE_HASH)) {
-            return $this->redirectToRoute("home");
+            return $this->redirectToRoute("home", ['route' => $request->attributes->get('_route')]);
         }
     }
 }

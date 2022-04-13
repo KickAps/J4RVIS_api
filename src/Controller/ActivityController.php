@@ -6,6 +6,7 @@ use App\Entity\Activity;
 use App\Entity\Calendar;
 use App\Repository\ActivityRepository;
 use App\Repository\CalendarRepository;
+use App\Utils\Config;
 use DateInterval;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -16,8 +17,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 
 class ActivityController extends AbstractController {
+    const SOMMEIL = "Sommeil";
+
     #[Route('/activity', name: 'activity_list')]
-    public function listAction(Request $request, CalendarRepository $calendarRepository, HomeController $homeController): Response {
+    public function listAction(Request $request, CalendarRepository $calendarRepository, HomeController $homeController, Config $config): Response {
         if($response = $homeController->check_cookie_password($request)) {
             return $response;
         }
@@ -43,6 +46,7 @@ class ActivityController extends AbstractController {
 
         return $this->render('activity/index.html.twig', [
             'data' => json_encode($calendar_json),
+            'last_data_sleep_refresh' => $config->getConfigByKey('last_data_sleep_refresh')
         ]);
     }
 
@@ -107,6 +111,42 @@ class ActivityController extends AbstractController {
         $em->flush();
 
         return new Response('', Response::HTTP_ACCEPTED);
+    }
+
+    #[Route("/activity/sleep", name: 'activity_sleep', methods: ['POST'])]
+    public function sleepActivity(Request $request, EntityManagerInterface $em, ActivityRepository $activityRepository, CalendarRepository $calendarRepository): Response {
+        $data = $request->getContent();
+        $data_json = json_decode($data, true);
+
+        if($a = $activityRepository->findOneBy(['title' => self::SOMMEIL])) {
+            $activity = $a;
+        } else {
+            $activity = new Activity();
+            $activity->setTitle(self::SOMMEIL);
+            $em->persist($activity);
+        }
+
+        $startedAt = (new DateTimeImmutable())->setTimestamp($data_json['startedAt']);
+        $stoppedAt = (new DateTimeImmutable())->setTimestamp($data_json['stoppedAt']);
+        $calendar = $calendarRepository->findOneBy([
+            'activity' => $activity,
+            'startedAt' => $startedAt,
+            'stoppedAt' => $stoppedAt,
+        ]);
+        if($calendar) {
+            return new Response('', Response::HTTP_ACCEPTED);
+        }
+
+        $calendar = new Calendar();
+        $calendar->setActivity($activity);
+        $calendar->setStartedAt($startedAt);
+        $calendar->setStoppedAt($stoppedAt);
+
+        $em->persist($calendar);
+
+        $em->flush();
+
+        return new Response('', Response::HTTP_CREATED);
     }
 
     // TODO : Affichage des activités côté MOBILE

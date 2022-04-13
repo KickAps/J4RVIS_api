@@ -3,23 +3,47 @@
 {% block title %}Activités{% endblock %}
 
 {% block body %}
-    <div id="activity_calendar" class="mt-3"></div>
+    <div class="container activity h-100">
+        <div class="row">
+            <div class="col-2"></div>
+            <div class="col-8 ">
+                <div id="activity_calendar" class="m-auto mt-3"></div>
+            </div>
+            <div class="col-2">
+                <span>Actualisation des données de sommeil</span>
+                <a id="button_refresh_sleep_data" class="btn btn-warning border-dark">
+                    <i class="fas fa-sync"></i>
+                </a>
+                <small>Dernière actualisation : {{ last_data_sleep_refresh|date('d/m/Y') }}</small>
+                <a id="warning_cookies" href="{{ url('garmin_connect_cookies') }}" hidden>Mise à jour des cookies nécessaire</a>
+            </div>
+        </div>
+    </div>
+    <input id="activity_sleep_url" type="hidden" value="{{ url('activity_sleep') }}">
+    <input id="garmin_connect_sleep_data_url" type="hidden" value="{{ url('garmin_connect_sleep_data') }}">
+    <input id="garmin_connect_update_last_data_sleep_refresh_url" type="hidden" value="{{ url('garmin_connect_update_last_data_sleep_refresh') }}">
+    <input id="last_data_sleep_refresh" type="hidden" value="{{ last_data_sleep_refresh }}">
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
+    {{ encore_entry_script_tags('garmin') }}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const calendarEl = document.getElementById('activity_calendar');
             const calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'timeGridWeek',
                 locale: 'fr',
+                selectable: true,
+                editable: true,
+                displayEventTime: true,
+                nextDayThreshold: "00:00:00",
                 headerToolbar: {
-                    left: 'prev,next today',
+                    left: 'prev,next,today',
                     center: 'title',
                     right: 'dayGridMonth,timeGridWeek,listWeek'
                 },
-                events: {{ data|raw }}
+                initialView: 'timeGridWeek',
+                events: {{ data|raw }},
             });
             calendar.render();
         });
