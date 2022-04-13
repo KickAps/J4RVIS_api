@@ -34,9 +34,9 @@ class HomeController extends AbstractController {
         ]);
     }
 
-    public function check_cookie_password(Request $request, string $route) {
+    public function check_cookie_password(Request $request) {
         if(!password_verify($request->cookies->get("password"), self::COOKIE_HASH)) {
-            return $this->redirectToRoute("home", ['route' => $route]);
+            return $this->redirectToRoute("home", ['route' => $request->attributes->get('_route')]);
         }
     }
 }

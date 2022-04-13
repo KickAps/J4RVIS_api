@@ -9,3 +9,11 @@
 import '../scss/app.scss';
 
 import 'bootstrap';
+
+export function showLoader() {
+    document.querySelector("div#loader").removeAttribute('hidden');
+}
+
+export function hideLoader() {
+    document.querySelector("div#loader").setAttribute('hidden', 'hidden');
+}
