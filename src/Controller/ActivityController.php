@@ -36,17 +36,44 @@ class ActivityController extends AbstractController {
                 $stop = (new DateTimeImmutable())->format('Y-m-d H:i:s');
                 $title .= " (En cours)";
             }
+            $color = $calendar->getActivity()->getColor();
             $calendar_json[] = [
                 'id' => $calendar->getId(),
                 'title' => $title,
                 'start' => $start,
                 'end' => $stop,
+                'color' => $color,
             ];
         }
 
         return $this->render('activity/index.html.twig', [
             'data' => json_encode($calendar_json),
             'last_data_sleep_refresh' => $config->getConfigByKey('last_data_sleep_refresh')
+        ]);
+    }
+
+    #[Route('/activity/color', name: 'activity_color', methods: ['GET', 'POST'])]
+    public function activity_color(Request $request, ActivityRepository $activityRepository, HomeController $homeController, EntityManagerInterface $em): Response {
+        if($response = $homeController->check_cookie_password($request)) {
+            return $response;
+        }
+
+        $data = $request->request->all();
+
+        if(sizeof($data) > 0) {
+            foreach($data as $id => $color) {
+                $activity = $activityRepository->find($id);
+                $activity->setColor($color);
+                $em->persist($activity);
+            }
+            $em->flush();
+            return $this->redirectToRoute('activity_list');
+        }
+
+        $activities = $activityRepository->findAll();
+
+        return $this->render('activity/color.html.twig', [
+            'activities' => $activities,
         ]);
     }
 

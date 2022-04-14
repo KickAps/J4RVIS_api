@@ -3,19 +3,31 @@
 {% block title %}Activités{% endblock %}
 
 {% block body %}
-    <div class="container activity h-100">
+    <div class="container activity">
         <div class="row">
             <div class="col-2"></div>
             <div class="col-8 ">
                 <div id="activity_calendar" class="m-auto mt-3"></div>
             </div>
-            <div class="col-2">
-                <span>Actualisation des données de sommeil</span>
-                <a id="button_refresh_sleep_data" class="btn btn-warning border-dark">
-                    <i class="fas fa-sync"></i>
-                </a>
-                <small>Dernière actualisation : {{ last_data_sleep_refresh|date('d/m/Y') }}</small>
-                <a id="warning_cookies" href="{{ url('garmin_connect_cookies') }}" hidden>Mise à jour des cookies nécessaire</a>
+            <div class="col-2 mt-3">
+                <div class="row mb-2">
+                    <div class="col">
+                        <a href="{{ path('activity_color') }}" class="btn btn-secondary">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <span>Modifier les couleurs</span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <span>Actualisation des données de sommeil</span>
+                        <a id="button_refresh_sleep_data" class="btn btn-warning border-dark">
+                            <i class="fas fa-sync"></i>
+                        </a>
+                        <small>Dernière actualisation : {{ last_data_sleep_refresh|date('d/m/Y') }}</small>
+                        <a id="warning_cookies" href="{{ url('garmin_connect_cookies') }}" hidden>Mise à jour des cookies nécessaire</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
