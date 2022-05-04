@@ -38,19 +38,23 @@ function callGarminConnect(dateArray, garmin_connect_sleep_data_url, activity_sl
             hideLoader();
             return;
         } else if(data['startedAt'] !== 0) {
-            callStartActivity(dateArray, data, activity_sleep_url);
+            callStartActivity(data, activity_sleep_url);
         } else {
             console.log("No sleep data");
         }
         if(dateArray.length !== 0) {
             callGarminConnect(dateArray, garmin_connect_sleep_data_url, activity_sleep_url);
+        } else {
+            updateLastDataSleepRefresh();
+            hideLoader();
+            location.reload();
         }
     }).catch(function(error) {
         console.log(error);
     });
 }
 
-function callStartActivity(dateArray, data, activity_sleep_url) {
+function callStartActivity(data, activity_sleep_url) {
     let options = {
         method: 'POST',
         headers: {
@@ -64,11 +68,6 @@ function callStartActivity(dateArray, data, activity_sleep_url) {
         return response;
     }).then(function(data) {
         console.log(data);
-        if(dateArray.length === 0) {
-            updateLastDataSleepRefresh();
-            hideLoader();
-            location.reload();
-        }
     }).catch(function(error) {
         console.log(error);
     });

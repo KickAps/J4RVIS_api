@@ -11,6 +11,7 @@ use DateInterval;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
@@ -89,7 +90,7 @@ class ActivityController extends AbstractController {
     }
 
     #[Route("/activity/start", name: 'activity_start', methods: ['POST'])]
-    public function startActivity(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, ActivityRepository $activityRepository): Response {
+    public function startActivity(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, ActivityRepository $activityRepository, CalendarRepository $calendarRepository): Response {
         $data = $request->getContent();
         $activity = $serializer->deserialize($data, Activity::class, 'json');
 
@@ -97,6 +98,19 @@ class ActivityController extends AbstractController {
             $activity = $a;
         } else {
             $em->persist($activity);
+        }
+
+        // Check if a same activity is already started
+        $calendar = $calendarRepository->findOneBy([
+            'activity' => $activity,
+            'stoppedAt' => null
+        ]);
+
+        if($calendar) {
+            $response = [
+                'id' => $calendar->getId()
+            ];
+            return new JsonResponse($response, Response::HTTP_ACCEPTED);
         }
 
         $calendar = new Calendar();
@@ -125,6 +139,10 @@ class ActivityController extends AbstractController {
             'stoppedAt' => null
         ]);
 
+        if(!$calendar) {
+            return new Response('', Response::HTTP_ACCEPTED);
+        }
+
         $start = $calendar->getStartedAt();
         $stop = new DateTimeImmutable();
 
@@ -137,7 +155,7 @@ class ActivityController extends AbstractController {
         $em->persist($calendar);
         $em->flush();
 
-        return new Response('', Response::HTTP_ACCEPTED);
+        return new Response('', Response::HTTP_OK);
     }
 
     #[Route("/activity/sleep", name: 'activity_sleep', methods: ['POST'])]
