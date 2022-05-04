@@ -11,6 +11,7 @@ use DateInterval;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,17 +37,44 @@ class ActivityController extends AbstractController {
                 $stop = (new DateTimeImmutable())->format('Y-m-d H:i:s');
                 $title .= " (En cours)";
             }
+            $color = $calendar->getActivity()->getColor();
             $calendar_json[] = [
                 'id' => $calendar->getId(),
                 'title' => $title,
                 'start' => $start,
                 'end' => $stop,
+                'color' => $color,
             ];
         }
 
         return $this->render('activity/index.html.twig', [
             'data' => json_encode($calendar_json),
             'last_data_sleep_refresh' => $config->getConfigByKey('last_data_sleep_refresh')
+        ]);
+    }
+
+    #[Route('/activity/color', name: 'activity_color', methods: ['GET', 'POST'])]
+    public function activity_color(Request $request, ActivityRepository $activityRepository, HomeController $homeController, EntityManagerInterface $em): Response {
+        if($response = $homeController->check_cookie_password($request)) {
+            return $response;
+        }
+
+        $data = $request->request->all();
+
+        if(sizeof($data) > 0) {
+            foreach($data as $id => $color) {
+                $activity = $activityRepository->find($id);
+                $activity->setColor($color);
+                $em->persist($activity);
+            }
+            $em->flush();
+            return $this->redirectToRoute('activity_list');
+        }
+
+        $activities = $activityRepository->findAll();
+
+        return $this->render('activity/color.html.twig', [
+            'activities' => $activities,
         ]);
     }
 
@@ -62,7 +90,7 @@ class ActivityController extends AbstractController {
     }
 
     #[Route("/activity/start", name: 'activity_start', methods: ['POST'])]
-    public function startActivity(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, ActivityRepository $activityRepository): Response {
+    public function startActivity(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, ActivityRepository $activityRepository, CalendarRepository $calendarRepository): Response {
         $data = $request->getContent();
         $activity = $serializer->deserialize($data, Activity::class, 'json');
 
@@ -70,6 +98,19 @@ class ActivityController extends AbstractController {
             $activity = $a;
         } else {
             $em->persist($activity);
+        }
+
+        // Check if a same activity is already started
+        $calendar = $calendarRepository->findOneBy([
+            'activity' => $activity,
+            'stoppedAt' => null
+        ]);
+
+        if($calendar) {
+            $response = [
+                'id' => $calendar->getId()
+            ];
+            return new JsonResponse($response, Response::HTTP_ACCEPTED);
         }
 
         $calendar = new Calendar();
@@ -98,6 +139,10 @@ class ActivityController extends AbstractController {
             'stoppedAt' => null
         ]);
 
+        if(!$calendar) {
+            return new Response('', Response::HTTP_ACCEPTED);
+        }
+
         $start = $calendar->getStartedAt();
         $stop = new DateTimeImmutable();
 
@@ -110,7 +155,7 @@ class ActivityController extends AbstractController {
         $em->persist($calendar);
         $em->flush();
 
-        return new Response('', Response::HTTP_ACCEPTED);
+        return new Response('', Response::HTTP_OK);
     }
 
     #[Route("/activity/sleep", name: 'activity_sleep', methods: ['POST'])]

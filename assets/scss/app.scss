@@ -83,3 +83,9 @@ div.container.activity {
     @extend .container;
     max-width: 100%;
 }
+
+input.color-picker {
+    width: 100%;
+    padding: 3px;
+    cursor: pointer;
+}

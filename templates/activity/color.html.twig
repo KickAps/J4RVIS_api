@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Activités{% endblock %}
+
+{% block body %}
+    <div class="text-center w-25 m-auto mt-3">
+        <form action="{{ path('activity_color') }}" method="POST">
+            {% for activity in activities %}
+                <div class="row">
+                    <div class="col">
+                        <h3>{{ activity.title }}</h3>
+                    </div>
+                    <div class="col">
+                        <input type="color" name="{{ activity.id }}" value="{{ activity.color }}" class="color-picker">
+                    </div>
+                </div>
+            {% endfor %}
+            <input type="submit" class="btn btn-secondary" value="Valider">
+        </form>
+    </div>
+{% endblock %}

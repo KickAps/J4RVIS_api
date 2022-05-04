@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Ignore;
 
 #[ORM\Entity(repositoryClass: ActivityRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Activity {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -26,6 +27,9 @@ class Activity {
     #[ORM\OneToMany(mappedBy: 'activity', targetEntity: Target::class)]
     private $targets;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private $color;
+
     public function __construct() {
         $this->calendars = new ArrayCollection();
         $this->targets = new ArrayCollection();
@@ -41,7 +45,6 @@ class Activity {
 
     public function setTitle(string $title): self {
         $this->title = $title;
-
         return $this;
     }
 
@@ -96,6 +99,21 @@ class Activity {
             }
         }
 
+        return $this;
+    }
+
+    public function getColor(): ?string {
+        return $this->color;
+    }
+
+    public function setColor(?string $color): self {
+        $this->color = $color;
+        return $this;
+    }
+
+    #[ORM\PrePersist]
+    public function setDefaultColor(): self {
+        $this->color = "#3498db";
         return $this;
     }
 }
